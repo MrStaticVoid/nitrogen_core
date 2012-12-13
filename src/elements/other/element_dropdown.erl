@@ -1,3 +1,4 @@
+% vim: ts=4 sw=4 et
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -9,37 +10,61 @@
 reflect() -> record_info(fields, dropdown).
 
 render_element(Record) -> 
-    ID = Record#dropdown.id,
-    Anchor = Record#dropdown.anchor,
-    case Record#dropdown.postback of
-        undefined -> ignore;
-        Postback -> wf:wire(Anchor, #event { type=change, postback=Postback, validation_group=ID, delegate=Record#dropdown.delegate })
+
+    wire_postback(Record),
+    Options = format_options(Record),
+
+    Multiple = case Record#dropdown.multiple of
+        true -> [{multiple}];
+        false -> []
     end,
 
-    case Record#dropdown.value of 
-        undefined -> ok;
-        Value -> wf:set(Anchor, Value)
-    end,
-
-    Options=case Record#dropdown.options of
-        undefined -> "";
-        L -> [create_option(X, Record#dropdown.html_encode) || X <- L]
+    Disabled = case Record#dropdown.disabled of
+        true -> [{disabled}];
+        false -> []
     end,
 
     wf_tags:emit_tag(select, Options, [
+        {id, Record#dropdown.html_id},
         {class, [dropdown, Record#dropdown.class]},
-        {style, Record#dropdown.style}
-    ]).
+        {style, Record#dropdown.style},
+        {name, Record#dropdown.html_name},
+        {data_fields, Record#dropdown.data_fields}
+    ] ++ Multiple ++ Disabled).
 
-create_option(X, HtmlEncode) ->
-    SelectedOrNot = case X#option.selected of
-        true -> selected;
-        _ -> not_selected
+wire_postback(Dropdown) when Dropdown#dropdown.postback==undefined ->
+    ignore;
+wire_postback(Dropdown) ->
+    wf:wire(Dropdown#dropdown.anchor, #event { 
+        type=change, 
+        postback=Dropdown#dropdown.postback,
+        validation_group=Dropdown#dropdown.id,
+        delegate=Dropdown#dropdown.delegate 
+    }).
+
+format_options(Dropdown) when Dropdown#dropdown.options==undefined ->
+    "";
+format_options(#dropdown{options=Opts, value=Value, html_encode=HtmlEncode}) ->
+    [create_option(Opt, HtmlEncode, Value) || Opt <- Opts, Opt#option.show_if==true].
+
+create_option(X, HtmlEncode, Value) ->
+    SelectedOrNot = if
+        (Value =/= undefined andalso X#option.value == Value)
+                orelse X#option.selected == true ->
+            selected;
+        true ->
+            not_selected
     end,
 
     Content = wf:html_encode(X#option.text, HtmlEncode),
-    Value = wf:html_encode(X#option.value, HtmlEncode),
-    wf_tags:emit_tag(option, Content, [
-        {value, Value},
-        {SelectedOrNot, true}
-    ]).
+
+    Props = [{SelectedOrNot, true}],
+
+    %% if value property is 'undefined', then we don't want to emit it at all
+    %% This keeps it consistent with the behavior of HTML forms
+    Props1 = case X#option.value of
+        undefined -> Props;
+        V -> [ {value,wf:html_encode(V,HtmlEncode)} | Props]
+    end,
+
+    wf_tags:emit_tag(option, Content, Props1).

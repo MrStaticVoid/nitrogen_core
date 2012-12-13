@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 -module (action_continue).
 -include_lib ("wf.hrl").
 -compile(export_all).
@@ -49,8 +50,11 @@ run_continue_function(Record) ->
     Ref = make_ref(),
     Self = self(),
 
+	Context = wf_context:context(),			
     % Spawn the user's function...
     Pid = spawn(fun() -> 
+		wf_context:context(Context),
+		wf_context:clear_actions(),
         try 
             Self ! {result, Fun(), Ref}
         catch 

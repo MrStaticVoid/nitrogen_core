@@ -1,3 +1,4 @@
+# vim: ts=2 sw=2 et ft=org
 #+STARTUP: showall
 #+STYLE: <link rel="stylesheet" href="tutorial.css" />
 #+TITLE: Introduction to Nitrogen
@@ -50,7 +51,8 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
 ** Install & Run Nitrogen
 *** Start Up
     : bin/nitrogen console
-    : open http://localhost:8000
+
+Open http://localhost:8000 in your Browser
 
 * Stop the Website
 ** Install & Run Nitrogen
@@ -69,8 +71,7 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
     + etc/ :: Configuration settings.
     + site/ :: Contains the website files, templates, and Erlang modules.
     + log/ :: The logs.
-    + doc/ :: Contains Nitrogen documentation.
-    + erts-5.7.5/ :: Embedded Erlang.
+    + erts-X.Y.Z/ :: Embedded Erlang.
     + releases/ :: Tells Erlang how to start the system.
     + lib/ :: Dependent libraries.
 
@@ -103,19 +104,31 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
 * Exercise: Modify a Nitrogen Page
 ** Install & Run Nitrogen
 *** Exercise: Modify Your First Page
-    + Open =site/src/index.erl=
-    + Change "Welcome to Nitrogen" to "Welcome to My Website"
     + From the Erlang Shell, run:
       : sync:go()
+    + Open =site/src/index.erl=
+    + Change "Welcome to Nitrogen" to "Welcome to My Website"
     + Reload the page
 
 * Exercise: Compile in Different Ways
 ** Install & Run Nitrogen
 *** Exercise: Compile in a Different Way
-    + Change to "Welcome to my ERL-TASTIC WEBSITE!" (or, you know, whatever)
     + From a different terminal, run:
       : bin/dev compile
+    + Change to "Welcome to my ERL-TASTIC WEBSITE!" (or, you know, whatever)
     + Reload the page
+
+* Dynamic Compiling
+** Install & Run Nitrogen
+*** Understanding =sync=
+
+    + Running =sync:go()= from the Erlang shell or =bin/dev compile= start the
+      =sync= application
+    + Sync applications constantly checks for changes to Erlang files and
+      attempts to recompile
+    + To stop sync's checking, run =sync:stop()=
+    + *Note*: Sync will only recompile files changed *since* sync was launched.
+      Sync is not aware of changes made before running =sync:go()=
 
 * Exercise: Debugging
 ** Install & Run Nitrogen
@@ -198,8 +211,8 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
 ** Nitrogen Pages
 *** Exercise: Create a New Page
     + Generate the Page
-      : bin/dev page my\_page
-      : $EDIT site/src/my\_page.erl
+      : bin/dev page my_page
+      : $EDIT site/src/my_page.erl
 
     + Replace the default body with:
       #+BEGIN_SRC erlang
@@ -346,7 +359,9 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
     #+BEGIN_SRC erlang
     body() ->
         [
-            #button { text="Submit", actions="alert('hello');" }
+            #button { text="Submit", actions=[
+            	#event{type=click,actions="alert('hello');" }
+            ]}
         ].
     #+END_SRC
         
@@ -358,10 +373,9 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
     #+BEGIN_SRC erlang
     body() ->
         [
-            #button { 
-                text="Submit", 
-                actions=#alert { text="Hello" } 
-            }
+            #button { text="Submit", actions=[
+              #event{type=click, actions=#alert { text="Hello" } 
+            ]}
         ].
     #+END_SRC
 
@@ -538,8 +552,8 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
         % 'mouseover', 'click', and 'mouseout' are standard Javascript
         % events.
         wf:wire(mybutton, [
-            #event { type=mouseover, postback=my_mouseover_event }
-            #event { type=click, postback=my_click_event }
+            #event { type=mouseover, postback=my_mouseover_event },
+            #event { type=click, postback=my_click_event },
             #event { type=mouseout, postback=my_mouseout_event }
         ]),
         [
@@ -549,7 +563,7 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
     event(my_click_event) ->
         ?PRINT({click, now()});
     event(OtherEvent) ->
-        ?PRINT({other, MyEvent, now()}).
+        ?PRINT({other, OtherEvent, now()}).
     #+END_SRC
         
 * More Event Examples
@@ -583,7 +597,7 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
     body() -> 
         #panel { style="margin: 50px;", body=[
             #button { id=mybutton, text="Submit", postback=click },
-            #panel { id=placeholder }
+            #panel { id=placeholder, body="This text will be replaced" }
         ]}.
 
     event(click) ->
@@ -693,7 +707,7 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
     *Exercise:* Modify my\_page.erl to display *TWO* counters. When the
     user presses the 'Submit' button, one counter should get
     incremented, the other counter should get doubled. The server
-    should remember the counter even if the closes and then re-opens
+    should remember the counters even if the user closes and then re-opens
     the browser.
 
 * Session State
@@ -1132,7 +1146,7 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
 
 
     /For more examples, see the built-in elements under
-    nitrogen/src/elements./
+    nitrogen_core/src/elements./
 
 * Custom Actions - Part 1
 ** Extending Nitrogen
@@ -1170,7 +1184,7 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
     #+END_SRC
 
     /For more examples, see the built-in actions under
-    nitrogen/src/actions./
+    nitrogen_core/src/actions./
 
 * Handlers - Part 1
 ** Extending Nitrogen
@@ -1212,7 +1226,7 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
     -module(my_security_handler).
     -behaviour(security_handler).
     -export([init/2, finish/2]).
-    -include_lib("nitrogen/include/wf.hrl").
+    -include_lib("nitrogen_core/include/wf.hrl").
      
     init(_Config, State) ->
         ?PRINT(wf:page_module()),
@@ -1266,4 +1280,6 @@ Pull the [[http://github.com/nitrogen/nitrogen][Nitrogen Source Code]], then =ma
 ** Thanks
 
    + Mailing List, Bugs, etc: [[http://nitrogenproject.com/community]]
-   + Follow me on Twitter: [[http://twitter/rklophaus][@rklophaus]]
+   + Follow Nitrogen on Twitter: [[http://twitter.com/nitrogenproject][@nitrogenproject]]
+   + Follow Rusty on Twitter: [[http://twitter.com/rustyio][@rustyio]]
+   + Follow Jesse on Twitter: [[http://twitter.com/jessegumm][@jessegumm]]

@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 -module (element_gravatar).
 -compile(export_all).
 -include_lib ("wf.hrl").
@@ -6,12 +7,15 @@ reflect() -> record_info(fields, gravatar).
 
 render_element(Record) -> 
     Image = #image {
+        html_id=Record#gravatar.html_id,
         id=Record#gravatar.id,
         anchor=Record#gravatar.anchor,
         image = gravatar_icon(Record)
     },
     element_image:render_element(Image).
 
+gravatar_icon(G = #gravatar{size=Size}) when is_integer(Size) ->
+	gravatar_icon(G#gravatar{size=wf:to_list(Size)});
 gravatar_icon(#gravatar{email=Email, size=Size, rating=Rating, default=Default}) ->
     GravatarId = digest2str(erlang:md5(wf:clean_lower(Email))),
     wf:f("http://www.gravatar.com/avatar/~s?size=~s&r=~s&d=~s" ,

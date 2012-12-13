@@ -1,3 +1,4 @@
+% vim: ts=4 sw=4 et
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -27,6 +28,12 @@ insert_top(Target, Elements) ->
 
 insert_bottom(Target, Elements) -> 
     ok = action_update:insert_bottom(Target, Elements).
+
+insert_before(Target, Elements) ->
+    ok = action_update:insert_before(Target, Elements).
+
+insert_after(Target, Elements) ->
+    ok = action_update:insert_after(Target, Elements).
 
 remove(Target) ->
     ok = action_update:remove(Target).
@@ -110,6 +117,8 @@ hex_decode(S) ->
 js_escape(String) -> 
     _String = wf_convert:js_escape(String).
 
+join(List,Delimiter) ->
+    _Result = wf_convert:join(List,Delimiter).
 
 %%% EXPOSE WF_BIND %%%
 % TODO
@@ -131,6 +140,9 @@ to_js_id(Path) ->
 
 temp_id() -> 
     _String = wf_render_elements:temp_id().
+
+normalize_id(Path) ->
+    _String = wf_render_elements:normalize_id(Path).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -166,14 +178,32 @@ cookies() ->
 cookie(Cookie) ->
     wf_context:cookie(Cookie).
 
+cookie_default(Cookie,DefaultValue) ->
+    wf_context:cookie_default(Cookie,DefaultValue).
+
 cookie(Cookie, Value) ->
     ok = wf_context:cookie(Cookie, Value).
 
 cookie(Cookie, Value, Path, MinutesToLive) ->
     ok = wf_context:cookie(Cookie, Value, Path, MinutesToLive).
 
+delete_cookie(Cookie) ->
+    ok = wf_context:delete_cookie(Cookie).
+
 socket() ->
     wf_context:socket().
+
+peer_ip() ->
+    wf_context:peer_ip().
+
+peer_ip(Proxies) ->
+    wf_context:peer_ip(Proxies).
+
+peer_ip(Proxies,ForwardedHeader) ->
+    wf_context:peer_ip(Proxies,ForwardedHeader).
+
+request_body() ->
+    wf_context:request_body().
 
 %%% EXPOSE QUERY_HANDLER %%%
 q(Key) -> 
@@ -188,7 +218,25 @@ mq(KeyList) when is_list(KeyList) ->
 mqs(KeyList) when is_list(KeyList) ->
     [qs(X) || X<-KeyList].
 
+%% Returns a proplist formed from the list of Keys
+q_pl(KeyList) when is_list(KeyList) ->
+    [{K,q(K)} || K <- KeyList].
 
+qs_pl(KeyList) when is_list(KeyList) ->
+    [{K,qs(K)} || K <- KeyList].
+
+%qs_pls(KeyList) when is_list(KeyList) ->
+%   Temp = mqs(KeyList),
+%   Vals = length(hd(Temp)),
+%   PL = 
+        
+%hd_all(Lists) ->
+%   Hds = [hd(L) || L <- Lists],
+%   Tls = [tl(L) || L <- Lists],
+%   {Hds,Tls}.
+        
+params() ->
+    query_handler:get_params().
 
 
 %%% EXPOSE LOG_HANDLER %%%
@@ -225,11 +273,14 @@ session_default(Key, DefaultValue) ->
 clear_session() -> 
     ok = session_handler:clear_all().
 
+session_id() ->
+    session_handler:session_id().
+
 
 
 %%% EXPOSE IDENTITY_HANDLER %%%
 user() -> 
-    _User = identity_handler:get_user().	
+    _User = identity_handler:get_user().    
 
 user(User) -> 
     ok = identity_handler:set_user(User).

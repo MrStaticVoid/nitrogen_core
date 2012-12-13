@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -15,7 +16,8 @@
     get_value/1, 
     get_value/2, 
     set_value/2, 
-    clear_all/0
+    clear_all/0,
+    session_id/0
 ]).
 
 % Example Session Handler Interface
@@ -24,7 +26,8 @@ behaviour_info(callbacks) -> [
     {finish, 2},
     {get_value, 4},       
     {set_value, 4},
-    {clear_all, 2}
+    {clear_all, 2},
+    {session_id, 2}
 ];
 behaviour_info(_) -> undefined.
 
@@ -49,3 +52,9 @@ set_value(Key, Value) ->
 % Clear all values from the storage area.
 clear_all() ->
     ok = wf_handler:call(session_handler, clear_all).
+
+% session_id() -> SessionId
+% Return the unique session id
+session_id() ->
+    {ok, SessionId} = wf_handler:call(session_handler, session_id),
+    SessionId.

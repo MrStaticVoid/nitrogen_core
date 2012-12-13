@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -26,6 +27,8 @@ render_action(Record) ->
         'toggle' when Effect==none -> ["toggle(", Actions, ");"];
         'appear' -> [wf:f("fadeIn(~p, ", [Speed]), Actions, ");"];
         'fade'   -> [wf:f("fadeOut(~p, ", [Speed]), Actions, ");"];
+        'slideup'-> [wf:f("slideUp(~p, ",[Speed]), Actions, ");"];
+        'slidedown'    -> [wf:f("slideDown(~p, ",[Speed]), Actions, ");"];
         'show'   -> [wf:f("show('~s', ~s, ~p, ", [Effect, Options, Speed]), Actions, ");"];
         'hide'   -> [wf:f("hide('~s', ~s, ~p, ", [Effect, Options, Speed]), Actions, ");"];
         'effect' -> [wf:f("effect('~s', ~s, ~p, ", [Effect, Options, Speed]), Actions, ");"];

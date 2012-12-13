@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -6,7 +7,8 @@
 -include_lib ("wf.hrl").
 -export ([
     render_elements/1,
-    temp_id/0
+    temp_id/0,
+	normalize_id/1
 ]).
 
 % render_elements(Elements) - {ok, Html}
@@ -35,9 +37,16 @@ render_elements(Element, HtmlAcc) when is_tuple(Element) ->
     HtmlAcc1 = [Html|HtmlAcc],
     {ok, HtmlAcc1};
 
+render_elements(mobile_script, HtmlAcc) ->
+	HtmlAcc1 = [mobile_script|HtmlAcc],
+	{ok, HtmlAcc1};
+
 render_elements(script, HtmlAcc) ->
     HtmlAcc1 = [script|HtmlAcc],
     {ok, HtmlAcc1};
+
+render_elements(Atom, HtmlAcc) when is_atom(Atom) ->
+	render_elements(wf:to_binary(Atom), HtmlAcc);
 
 render_elements(Unknown, _HtmlAcc) ->
     throw({unanticipated_case_in_render_elements, Unknown}).
@@ -115,7 +124,7 @@ call_element_render(Module, Element) ->
 normalize_id(ID) -> 
     case wf:to_string_list(ID) of
         [".wfid_" ++ _] = [NormalizedID] -> NormalizedID;
-        ["page"] -> ".page";
+        ["page"] -> "page";
         [NewID]  -> ".wfid_" ++ NewID
     end.
 

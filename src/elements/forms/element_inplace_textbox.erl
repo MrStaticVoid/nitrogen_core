@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -29,6 +30,7 @@ render_element(Record) ->
     % Create the view...
     Text = Record#inplace_textbox.text,
     Terms = #panel { 
+        html_id=Record#inplace_textbox.html_id,
         class=[inplace_textbox, Record#inplace_textbox.class],
         style=Record#inplace_textbox.style,
         body = [
@@ -48,8 +50,8 @@ render_element(Record) ->
             ]},
             #panel { id=EditPanelID, class="edit", body=[
                 #textbox { id=TextBoxID, text=Text, next=OKButtonID },
-                #button { id=OKButtonID, text="OK", actions=OKEvent#event { type=click } },
-                #button { id=CancelButtonID, text="Cancel", actions=CancelEvent#event { type=click } }
+                #button { id=OKButtonID, text="OK" },
+                #button { id=CancelButtonID, text="Cancel" }
             ]}
         ]
     },
@@ -61,6 +63,9 @@ render_element(Record) ->
             Script = #script { script="obj('me').focus(); obj('me').select();" },
             wf:wire(TextBoxID, Script)
     end,
+
+    wf:wire(CancelButtonID, CancelEvent#event { type=click }),
+    wf:wire(OKButtonID, OKEvent#event { type=click }),
 
     wf:wire(OKButtonID, TextBoxID, #validate { attach_to=CancelButtonID, validators=Record#inplace_textbox.validators }),
 

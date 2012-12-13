@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -15,6 +16,7 @@ render_element(Record) ->
     ],
 
     wf_tags:emit_tag(td, Body, [
+        {id, Record#tablecell.html_id},
         {class, [tablecell, Record#tablecell.class]},
         {style, Record#tablecell.style},
         {align, Record#tablecell.align},

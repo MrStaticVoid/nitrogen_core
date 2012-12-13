@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -14,6 +15,7 @@ render_action(Record) ->
     end,
     Text = wf:js_escape(Record#validation_error.text),
     [
+		%% Is this going to be a problem with memory leaks? I'm not sure.
         wf:f("var v = new LiveValidation(obj('~s'), { onlyOnSubmit: true ~s});", [TargetPath, InsertAfterNode]),
         wf:f("v.add(Validate.Custom, { against: Nitrogen.$return_false, failureMessage: \"~s\", displayMessageWhenEmpty: true });", [Text]),
         "v.validate();"

@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 %%% Datepicker Control Element.
 %%% Copyright (c) 2009 Torbjorn Tornkvist
 %%% See MIT-LICENSE for the Nitrogen Web Framework for Erlang
@@ -13,6 +14,7 @@ render_element(Record) ->
     Options = action_jquery_effect:options_to_js(Record#datepicker_textbox.options),
 
     Textbox = #textbox {
+        html_id     = Record#datepicker_textbox.html_id,
         class       = [datepicker_textbox, Record#datepicker_textbox.class],
         style       = Record#datepicker_textbox.style,
         text        = Record#datepicker_textbox.text,

@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -27,6 +28,28 @@ response_bridge(ResponseBridge) ->
 socket() ->
     Req = wf_context:request_bridge(), 
     Req:socket().
+
+peer_ip() ->
+    Req = request_bridge(),
+    Req:peer_ip().
+
+peer_ip(Proxies) ->
+    peer_ip(Proxies,x_forwarded_for).
+
+peer_ip(Proxies,ForwardedHeader) ->
+    ConnIP = peer_ip(),
+    case header(ForwardedHeader) of
+        undefined -> ConnIP;
+        ForwardedIP ->
+            case lists:member(ConnIP,Proxies) of
+                true -> ForwardedIP;
+                false -> ConnIP
+            end
+    end.
+
+request_body() ->
+    Req = request_bridge(),
+    Req:request_body().
 
 status_code() ->
     Req = request_bridge(),
@@ -59,9 +82,17 @@ cookies() ->
     Req = request_bridge(),
     Req:cookies().
 
+cookie(Cookie) when is_atom(Cookie) ->
+    cookie(atom_to_list(Cookie));
 cookie(Cookie) ->
     Req = request_bridge(),
     Req:cookie(Cookie).
+
+cookie_default(Cookie,DefaultValue) ->
+    case cookie(Cookie) of
+        undefined -> DefaultValue;
+        Value -> Value
+    end.
 
 cookie(Cookie, Value) ->
     Res = response_bridge(),
@@ -72,6 +103,10 @@ cookie(Cookie, Value, Path, MinutesToLive) ->
     Res = response_bridge(),
     response_bridge(Res:cookie(Cookie, Value, Path, MinutesToLive)),
     ok.
+
+delete_cookie(Cookie) ->
+    cookie(Cookie,"","/",0).
+
 
 %%% TRANSIENT CONTEXT %%%
 
@@ -200,8 +235,6 @@ event_validation_group() ->
 event_validation_group(ValidationGroup) ->
     Event = event_context(),
     event_context(Event#event_context { validation_group = ValidationGroup }).
-
-
 
 %%% HANDLERS %%%
 

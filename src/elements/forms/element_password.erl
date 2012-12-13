@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -22,8 +23,10 @@ render_element(Record) ->
 
     Value = wf:html_encode(Record#password.text, Record#password.html_encode),
     wf_tags:emit_tag(input, [
+        {id, Record#password.html_id},
         {type, password},
         {class, [password, Record#password.class]},
         {style, Record#password.style},
+        {name, Record#password.html_name},
         {value, Value}
     ]).

@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -54,7 +55,7 @@ finish(_Config, State) ->
 % First, cycle through code:all_loaded(). If not there, then check erl_prim_loader:get_file()
 % If still not there, then 404.
 route("/") -> 
-    {index, []};
+    {list_to_atom(module_name(["index"])), []};
 
 route(Path) ->
     IsStatic = (filename:extension(Path) /= []),
@@ -92,11 +93,19 @@ route(Path) ->
 %%             find_loaded_module(tl(lists:reverse(Tokens)), [hd(lists:reverse(Tokens))|ExtraTokens])
 %%     end.
 
+module_name(Tokens) ->
+    ModulePrefix = wf:config_default(module_prefix, ""),
+	AllTokens = case ModulePrefix of
+	    "" -> Tokens;
+	    _ -> [ ModulePrefix | Tokens ]
+	end,
+	_ModuleName = string:join(AllTokens, "_").
+
 try_load_module(Tokens) -> try_load_module(Tokens, []).
 try_load_module([], _ExtraTokens) -> undefined;
 try_load_module(Tokens, ExtraTokens) ->
     %% Get the module name...
-    ModuleName = string:join(Tokens, "_"),
+    ModuleName = module_name(Tokens),
     Module = try 
         list_to_existing_atom(ModuleName)
     catch _:_ ->

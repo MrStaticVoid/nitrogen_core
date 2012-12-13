@@ -1,4 +1,4 @@
-% Nitrogen Web Framework for Erlang
+% vim: sw=4 ts=4 et
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
 
@@ -36,6 +36,10 @@ reflect() -> record_info(fields, upload).
 
 render_element(Record) ->
     Anchor = Record#upload.anchor,
+	Multiple = Record#upload.multiple,
+    Droppable = Record#upload.droppable,
+    DroppableText = Record#upload.droppable_text,
+    FileInputText = Record#upload.file_text,
     ShowButton = Record#upload.show_button,
     ButtonText = Record#upload.button_text,
     StartedTag = {upload_started, Record},
@@ -43,7 +47,20 @@ render_element(Record) ->
     FormID = wf:temp_id(),
     IFrameID = wf:temp_id(),
     ButtonID = wf:temp_id(),
-    SubmitJS = wf:f("Nitrogen.$upload(jQuery('#~s').get(0));", [FormID]),
+    DropID = wf:temp_id(),
+    DropListingID = wf:temp_id(),
+    FileInputID = wf:temp_id(),
+    FakeFileInputID = wf:temp_id(),
+
+	Param = [
+		{droppable,Droppable},
+		{autoupload,not(ShowButton)}
+	],
+
+	JSONParam = nitro_mochijson2:encode({struct,Param}),
+	SubmitJS = wf:f("Nitrogen.$send_pending_files(jQuery('#~s').get(0),jQuery('#~s').get(0));",[FormID,FileInputID]),
+    UploadJS = wf:f("Nitrogen.$attach_upload_handle_dragdrop(jQuery('#~s').get(0),jQuery('#~s').get(0),~s);", [FormID,FileInputID,JSONParam]),
+
     PostbackInfo = wf_event:serialize_event_context(FinishedTag, Record#upload.id, undefined, ?MODULE),
 
     % Create a postback that is called when the user first starts the upload...
@@ -51,16 +68,73 @@ render_element(Record) ->
     wf:wire(ButtonID, #event { show_if=ShowButton, type=click, delegate=?MODULE, postback=StartedTag }),
 
     % If the button is invisible, then start uploading when the user selects a file.
-    wf:wire(Anchor, #event { show_if=(not ShowButton), type=change, actions=SubmitJS }),
+    %wf:wire(Anchor, #event { show_if=(not ShowButton), type=change, actions=SubmitJS }),
     wf:wire(ButtonID, #event { show_if=ShowButton, type=click, actions=SubmitJS }),
+
+    wf:wire(UploadJS),
+
+    % Set the dimensions of the file input element the same as
+    % faked file input button has.
+    wf:wire(wf:f("jQuery('#~s').width(jQuery('#~s').width()); jQuery('#~s').height(jQuery('#~s').height());",
+        [FileInputID, FakeFileInputID, FileInputID, FakeFileInputID])),
 
     % Render the controls and hidden iframe...
     FormContent = [
-        wf_tags:emit_tag(input, [
-            {name, file},
-            {class, [no_postback|Anchor]},
-            {type, file}
-        ]),	
+        %% IE9 does not support the droppable option, so let's just hide the drop field
+        "<!--[if lte IE 9]>
+            <style type='text/css'> .upload_drop {display: none} </style>
+        <![endif]-->",
+
+        #panel{
+            show_if=Droppable,
+            id=DropID,
+            class=[upload_drop,'dropzone-container'],
+            body=[
+                #panel{
+                    class=[dropzone,'ui-corner-all'],
+                    text=DroppableText
+                }
+            ]
+        },
+        #panel{
+            %show_if=Droppable,
+            class=upload_progress,
+            body=""
+        },
+        #list{
+            show_if=Droppable,
+            id=DropListingID,
+            class=upload_droplist
+        },
+
+%%  ORIGINAL!
+%%        wf_tags:emit_tag(input, [
+%%            {name, file},
+%%            {multiple,Multiple},
+%%            {class, [no_postback,FileInputID|Anchor]},
+%%            {id, FileInputID},
+%%            {type, file}
+%%        ]),	
+        #panel{
+            style="position: relative;",
+            body=[
+                wf_tags:emit_tag(input, [
+                    {type, button},
+                    {style, "margin: 2px; border: 2px outset rgb(221, 221, 221); padding: 1px 6px; position: absolute; top: 0px; left: 0px; z-index: 1;"},
+                    {value, FileInputText},
+                    {id, FakeFileInputID}
+                ]),
+
+                wf_tags:emit_tag(input, [
+                    {name, file},
+                    {multiple, Multiple},
+                    {class, [no_postback, FileInputID|Anchor]},
+                    {id, FileInputID},
+                    {type, file},
+                    {style, "margin: 2px; border: 2px outset rgb(221, 221, 221); padding: 1px 6px; opacity: 0; filter:alpha(opacity: 0); position: relative; z-index: 2;"}
+                ])
+            ]
+        },
 
         wf_tags:emit_tag(input, [
             {name, eventContext},
@@ -93,14 +167,9 @@ render_element(Record) ->
             {enctype, "multipart/form-data"},
             {class, no_postback},
             {target, IFrameID}
-        ]),
-
-        wf_tags:emit_tag(iframe, [], [
-            {id, IFrameID},
-            {name, IFrameID},
-            {style, "display: none; width: 300px; height: 100px;"}
         ])
     ].
+
 
 % This event is fired when the user first clicks the upload button.
 event({upload_started, Record}) ->
@@ -116,11 +185,11 @@ event({upload_finished, Record}) ->
     Req = wf_context:request_bridge(),
 
     % % Create the postback...
-    NewTag = case Req:post_files() of
+    {Filename,NewTag} = case Req:post_files() of
         [] -> 
-            {upload_event, Record, undefined, undefined, undefined};
+            {undefined,{upload_event, Record, undefined, undefined, undefined}};
         [#uploaded_file { original_name=OriginalName, temp_file=TempFile }|_] ->
-            {upload_event, Record, OriginalName, TempFile, node()}
+            {OriginalName,{upload_event, Record, OriginalName, TempFile, node()}}
     end,
 
     % Make the tag...
@@ -130,10 +199,8 @@ event({upload_finished, Record}) ->
 
     % Set the response...
     wf_context:data([
-        "<html><body><script>",
-        "var Nitrogen = window.parent.Nitrogen;",
-        Postback,
-        "</script></body></html>"
+        "Nitrogen.$upload_finished(\"",wf:js_escape(Filename),"\");",
+        Postback
     ]);
 
 % This event is fired by the upload_finished event, it calls

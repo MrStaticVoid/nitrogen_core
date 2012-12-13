@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -6,10 +7,15 @@
 -include_lib ("wf.hrl").
 -compile(export_all).
 
-render_validator(TriggerPath, TargetPath, Record) -> 
+render_action(Record) ->
+    TriggerPath = Record#is_integer.trigger,
+    TargetPath = Record#is_integer.target,
     Text = wf:js_escape(Record#is_integer.text),
-    validator_custom:render_validator(TriggerPath, TargetPath, #custom { function=fun validate/2, text = Text, tag=Record, attach_to=Record#is_integer.attach_to }),
-    wf:f("v.add(Validate.Numericality, { notAnIntegerMessage: \"~s\", onlyInteger: true });", [Text]).
+    CustomValidatorAction =  #custom { trigger=TriggerPath, target=TargetPath, function=fun validate/2, text = Text, tag=Record, attach_to=Record#is_integer.attach_to },
+    Script = wf:f("v.add(Validate.Numericality, { notAnIntegerMessage: \"~s\", onlyInteger: true });", [Text]),
+    [CustomValidatorAction, Script].
+    
+
 
 validate(_, Value) -> 
     try is_integer(list_to_integer(Value)) == true

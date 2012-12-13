@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -24,6 +25,7 @@ render_element(Record) ->
     Content = [Header, Footer, Body ],
 
     wf_tags:emit_tag( table, Content, [
+        {id, Record#table.html_id},
         {border, 0},
         {cellpadding, 0},
         {cellspacing, 0},

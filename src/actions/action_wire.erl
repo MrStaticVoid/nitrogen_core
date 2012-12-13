@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -54,12 +55,13 @@ wire(_, _, undefined) ->
 wire(_, _, []) -> 
     ok;
 
-wire(Trigger, Target, Actions) when ?IS_STRING(Actions) ->
+wire(Trigger, Target, Actions) when is_binary(Actions) orelse ?IS_STRING(Actions) ->
     wire(Trigger, Target, #script { script=Actions });
 
 wire(Trigger, Target, Actions) ->
     Anchor = wf_context:anchor(),
     Action = #wire {
+		%% TODO: Add defer property then the actions should be sorted before being rendered
         anchor  = Anchor, 
         trigger = wf:coalesce([Trigger, Anchor]), 
         target  = wf:coalesce([Target, Anchor]), 

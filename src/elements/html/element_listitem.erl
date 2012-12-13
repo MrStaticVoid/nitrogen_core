@@ -1,3 +1,4 @@
+% vim: ts=4 sw=4 et
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -15,6 +16,9 @@ render_element(Record) ->
     ],
 
     wf_tags:emit_tag(li, Body, [
+        {id, Record#listitem.html_id},
         {class, [listitem, Record#listitem.class]},
-        {style, Record#listitem.style}
+        {role, Record#listitem.role},
+        {style, Record#listitem.style},
+        {data_fields, Record#listitem.data_fields}
     ]).

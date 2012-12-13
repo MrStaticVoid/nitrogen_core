@@ -1,11 +1,12 @@
+# vim: ts=2 sw=2 et ft=org
 #+STYLE: <LINK href="stylesheet.css" rel="stylesheet" type="text/css" />
 #+STYLE: <LINK href="stylesheet_api.css" rel="stylesheet" type="text/css" />
 #+TITLE: Nitrogen 2.x Documentation
-#+AUTHOR: Rusty Klophaus (@rklophaus)
+#+AUTHOR: Rusty Klophaus (@rustyio)
 #+OPTIONS:   H:2 num:1 toc:1 \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
 #+EMAIL:
 
-#+TEXT: [[file:./index.org][Getting Started]] | API | [[file:./elements.org][Elements]] | [[file:./actions.org][Actions]] | [[file:./validators.org][Validators]] | [[file:./handlers.org][Handlers]] | [[file:./about.org][About]]
+#+TEXT: [[file:./index.org][Getting Started]] | *API* | [[file:./elements.org][Elements]] | [[file:./actions.org][Actions]] | [[file:./validators.org][Validators]] | [[file:./handlers.org][Handlers]] | [[file:./config.org][Configuration Options]] | [[file:./about.org][About]]
 #+HTML: <div class=headline>Nitrogen API</div>
 
 * Index
@@ -30,6 +31,9 @@
 
   TargetID can refer to the name of an element, or it can be a JQuery
   selector path. See [[./paths.org][Element Paths]] for more information.
+
+** wf:set(TargetID,Value) -> ok
+   Update a form element (textbox, dropdown, checkbox, etc) to set text value of TargetID. Can also be used to set the =src= attribute of an image tag.
    
 ** wf:update(TargetID, Elements) -> ok
    Update the contents of TargetID with a new set of Nitrogen Elements.
@@ -41,10 +45,16 @@
    Remove TargetID from the DOM.
    
 ** wf:insert\_top(TargetID, Elements) -> ok
-   Insert Nitrogen Elements at the top of TargetID, shifting the existing contents downward.
+   Insert Nitrogen Elements at the top of TargetID (within the contents of TargetID), shifting the existing contents downward.
    
 ** wf:insert\_bottom(TargetID, Elements) -> ok
-   Insert Nitrogen Elements at the bottom of the TargetID, below the existing contents.
+   Insert Nitrogen Elements at the bottom of the TargetID (within the contents of TargetID), below the existing contents.
+
+** wf:insert\_before(TargetID, Elements) -> ok
+   Insert Nitrogen Elements before TargetID in the DOM, shifting the existing contents downward.
+   
+** wf:insert\_after(TargetID, Elements) -> ok
+   Insert Nitrogen Elements after TargetID in the DOM, below the existing contents.
 
 ** wf:flash(Elements) -> ok
    Insert the Nitrogen Elements as a new flash message.
@@ -119,6 +129,14 @@
 
    Convert a String to a JS-safe string by adding backslashes to quotes and newlines.
 
+** wf:join([Terms],Delimiter) -> [Terms]
+
+   Because Erlang doesn't provide a means to join a list in a non-string fashion, this will join the =Terms= on the delimiter, regardless of the type of =Delimiter=.
+
+#+BEGIN_SRC erlang
+   wf:join([Line1,Line2,Line2],#br{}).
+#+END_SRC
+
 * Event Wiring
 # <<3>>
    
@@ -130,7 +148,7 @@
    For example, show a Javascript alert:
 
 #+BEGIN_SRC erlang
-   wf:wire(#alert { text=\"Hello, World!\" })
+   wf:wire(#alert { text="Hello, World!" })
 #+END_SRC
    
 ** wf:wire(TargetID, Actions) -> ok
@@ -162,16 +180,16 @@
 * Asynchronous Page Updates (Comet, Continuations)
 # <<4>>
 
-** wf:comet(Function) -> Pid
+** wf:comet(Function) -> {ok, Pid}
 
    Spawn a comet function, and tell the browser to open a COMET request to receive the results in real time.
    See [[http://nitrogenproject.com/web/samples/comet1][example 1]], [[http://nitrogenproject.com/web/samples/comet2][example 2]], and [[http://nitrogenproject.com/web/samples/comet3][example 3]] for usage.
 
-** wf:comet(Function, LocalPool) -> Pid
+** wf:comet(Function, LocalPool) -> {ok, Pid}
 
    Spawn a function connected to the specified local pool.
 
-** wf:comet_global(Function, GlobalPool) -> Pid
+** wf:comet\_global(Function, GlobalPool) -> {ok, Pid}
 
    Spawn a function connected to the specified global pool.
 
@@ -302,7 +320,8 @@
    Check if the current user has a specified role.
    
 ** wf:role(Role, IsInRole) -> ok
-   Set whether the current user is in a specified role.
+   Set whether the current user is in a specified role. =IsInRole= should be a
+   boolean (=true= or =false=)
    
 ** wf:clear\_roles() -> ok
    Remove the user from all roles.
@@ -316,11 +335,85 @@
    than one AtomKey matches, then this will throw an error, use
    =wf:qs(AtomKey)= instead.
 
+   *Mnemonic:* Think =q= as "Query".
+
+** wf:mq(ListOfAtomKeys) -> [ListOfStrings]
+
+   Get the list of query string and POST values for the provided keys, and 
+   return the list of values for the keys. Syntactical sugar equivilant of:
+
+#+BEGIN_SRC erlang
+   [wf:q(AtomKey) || AtomKey <- ListOfAtomKeys]
+#+END_SRC
+
+   *Mnemonic*: Think =mq= as "Multi Query".
+
+** wf:q\_pl(ListOfAtomKeys) -> [{Key,Values},...]
+
+   Takes a list of keys returns a proplist of keys and respective values from query string and POST values.
+
+   *Mnemonic*: Think =q_pl= as "Query Proplist"
+
+Example:
+#+BEGIN_SRC erlang
+  wf:qs_pl([favorite_robot,favorite_dinosaur,favorite_hobbit])
+#+END_SRC
+
+  Returns something like:
+#+BEGIN_SRC erlang
+  [
+      {favorite_robot,"Optimus Prime"},
+      {favorite_dinosaur,"Velociraptor"},
+      {favorite_hobbit,"Samwise"}
+  ].
+
+#+END_SRC
+
+
 ** wf:qs(AtomKey) -> [String]
 
    Get a list of query string and POST values for the provided
    key. (This acts like =wf:q(AtomKey)= in Nitrogen 1.0.)
   
+   *Mnemonic:* Think =qs= as "Query Plural"
+
+** wf:mqs(ListOfAtomKeys) -> [ListOfStrings]
+
+   Get a list of query string and POST values for the provided list of keys.  Syntactical sugar equivilant of:
+
+#+BEGIN_SRC erlang
+   [wf:qs(AtomKey) || AtomKey <- ListOfAtomKeys]
+#+END_SRC
+
+   *Mnemonic*: Think =mqs= as "Multi Query Plural"
+
+** wf:qs\_pl(ListOfAtomKeys) -> [{Key,ListOfValues},...]
+
+   Takes a list of keys and returns a proplist of keys and respective list of values from the query string and POST values.
+
+   *Mnemonic*: Think =qs_pl= as "Query Plurals into a Proplist"
+
+Example:
+#+BEGIN_SRC erlang
+  wf:qs_pl([fruit,veggie,meat])
+#+END_SRC
+
+  Returns something like:
+#+BEGIN_SRC erlang
+  [
+     {fruit,["Apple","Peach"]},
+     {veggie,["Broccoli"]},
+     {meat,["Pork","Beef","Venison"]}
+  ].
+#+END_SRC
+
+
+** wf:request\_body() -> String
+   Return the complete text of the request body to the server. Note, this value 
+   will use the context of the current request. For example, the result of calling 
+   this during the page's initial request will be different than calling it within
+   a postback event.
+
 ** wf:status\_code(IntegerCode) -> ok
    Set the HTTP response code. Default is 200.
    
@@ -348,11 +441,11 @@
 
    Return a proplist of all cookies.
 
-** wf:get\_cookie(Key) -> String
+** wf:cookie(Key) -> String
 
    Get the value of a cookie.
 
-** wf:get\_cookie\_default(Key, Default) -> String.
+** wf:cookie\_default(Key, Default) -> String.
 
    Get the value of a cookie, if it doesn't exist, return the default.
 
@@ -365,7 +458,12 @@
 
    Tell Nitrogen to set a cookie on the browser under the specified Path that is valid
    for a certain number of minutes.
-   
+
+** wf:delete\_cookie(Key) -> ok
+
+   Tell Nitrogen to set the cookie to expire immediately, effectively deleting it from 
+   the browser.  Is a shortcut for =wf:cookie(Key,"","/",0)=.
+ 
 * HTTP Headers
 # <<11>>
    

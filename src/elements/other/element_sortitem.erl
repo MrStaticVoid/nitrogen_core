@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -17,6 +18,7 @@ render_element(Record) ->
     wf:wire(Script),
 
     Panel = #panel {
+        html_id=Record#sortitem.html_id,
         id=Record#sortitem.id,
         anchor=Record#sortitem.anchor,
         class=[sortitem, Record#sortitem.class],

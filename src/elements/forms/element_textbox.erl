@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -24,9 +25,14 @@ render_element(Record) ->
     end,
 
     Value = wf:html_encode(Record#textbox.text, Record#textbox.html_encode),
+    Placeholder  = wf:html_encode(Record#textbox.placeholder, true),
     wf_tags:emit_tag(input, [
+        {id, Record#textbox.html_id},
         {type, text}, 
         {class, [textbox, Record#textbox.class]},
+        {maxlength, Record#textbox.maxlength},
         {style, Record#textbox.style},
+        {name, Record#textbox.html_name},
+        {placeholder, Placeholder},
         {value, Value}
     ]).

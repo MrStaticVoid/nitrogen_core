@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -23,10 +24,8 @@ render_action(Record) ->
     end,
 
     % Create the validator Javascript...
-    % 
-    % TODO: using jQuery.data instead setting the validator object as property 
-    % of the DOM node. We could get a problem with Internet Explorer and memory leaks.
-    ConstructorJS = wf:f("var v = obj('~s').validator = new LiveValidation(obj('~s'), { validMessage: \"~s\", onlyOnBlur: ~s, onlyOnSubmit: ~s ~s});", [TargetPath, TargetPath, wf:js_escape(ValidMessage), OnlyOnBlur, OnlyOnSubmit, InsertAfterNode]),
+	ConstructorJS = wf:f("var v = Nitrogen.$add_validation(obj('~s'), { validMessage: \"~s\", onlyOnBlur: ~s, onlyOnSubmit: ~s ~s});", [TargetPath, wf:js_escape(ValidMessage), OnlyOnBlur, OnlyOnSubmit, InsertAfterNode]),
+
     TriggerJS = wf:f("v.group = '~s';", [ValidationGroup]),
 
     % Update all child validators with TriggerPath and TargetPath...

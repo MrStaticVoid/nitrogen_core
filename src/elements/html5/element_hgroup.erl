@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % See MIT-LICENSE for licensing information.
 
@@ -30,6 +31,7 @@ render_element(Record) ->
     if
         Y ->
             wf_tags:emit_tag(hgroup, Record#hgroup.body, [
+                {id, Record#hgroup.html_id},
                 {class, ["hgroup", Record#hgroup.class]},
                 {style, Record#hgroup.style}
             ]);

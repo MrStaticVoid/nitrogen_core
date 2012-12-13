@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -10,7 +11,10 @@ reflect() -> record_info(fields, checkbox).
 
 render_element(Record) -> 
     ID = Record#checkbox.id,
-    Anchor = Record#checkbox.anchor,
+    Anchor = case Record#checkbox.anchor of
+        "." ++ AnchorNoDot -> AnchorNoDot;
+        A -> A
+    end,
     CheckedOrNot = case Record#checkbox.checked of
         true -> checked;
         _ -> not_checked
@@ -24,7 +28,8 @@ render_element(Record) ->
     [
         % Checkbox...
         wf_tags:emit_tag(input, [
-            {name, Anchor},
+            {name, Record#checkbox.html_name},
+            {id,   Anchor},
             {type, checkbox},
             {class, [checkbox, Record#checkbox.class]},
             {style, Record#checkbox.style},

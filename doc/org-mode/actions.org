@@ -1,10 +1,11 @@
+# vim: ts=2 sw=2 et ft=org
 #+STYLE: <LINK href="stylesheet.css" rel="stylesheet" type="text/css" />
 #+TITLE: Nitrogen 2.x Documentation
-#+AUTHOR: Rusty Klophaus (@rklophaus)
+#+AUTHOR: Rusty Klophaus (@rustyio)
 #+OPTIONS:   H:2 num:1 toc:1 \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
 #+EMAIL: 
 
-#+TEXT: [[file:./index.org][Getting Started]] | [[file:./api.org][API]] | [[file:./elements.org][Elements]] | Actions | [[file:./validators.org][Validators]] | [[file:./handlers.org][Handlers]] | [[file:./about.org][About]]
+#+TEXT: [[file:./index.org][Getting Started]] | [[file:./api.org][API]] | [[file:./elements.org][Elements]] | *Actions* | [[file:./validators.org][Validators]] | [[file:./handlers.org][Handlers]] | [[file:./config.org][Configuration Options]] | [[file:./about.org][About]]
 #+HTML: <div class=headline>Nitrogen Actions</div>
 
 * Base Action
@@ -14,17 +15,22 @@
   + [[./actions/event.org][Event]]
   + [[./actions/script.org][Script]]
   + [[./actions/validate.org][Validate]]
+  + [[./actions/clear_validation.org][Clear Validation]]
+  + [[./actions/api.org][Ajax API]]
 
 * Effects
   + [[./actions/show.org][Show]]
   + [[./actions/hide.org][Hide]]
   + [[./actions/appear.org][Appear]]
   + [[./actions/fade.org][Fade]]
+  + [[./actions/slide_down.org][Slide Down]]
+  + [[./actions/slide_up.org][Slide Up]]
   + [[./actions/animate.org][Animate]]
   + [[./actions/toggle.org][Toggle]]
   + [[./actions/effect.org][Effect]]
   + [[./actions/add_class.org][Add Class]]
   + [[./actions/remove_class.org][Remove Class]]
+  + [[./actions/disable.org][Disable]]
 
 * Feedback
   + [[./actions/alert.org][Alert]]

@@ -1,3 +1,4 @@
+% vim: sw=4 ts=4 et ft=erlang
 % Nitrogen Web Framework for Erlang
 % Copyright (c) 2008-2010 Rusty Klophaus
 % See MIT-LICENSE for licensing information.
@@ -20,14 +21,17 @@ render_element(Record) ->
     end,
     ConnectWithGroups = groups_to_connect_with(Record#sortblock.connect_with_groups),
     GroupClasses = groups_to_classes(Record#sortblock.group),
+    Placeholder = Record#sortblock.placeholder,
+    ForcePlaceholderSize = Record#sortblock.force_placeholder_size,
 
     % Emit the javascript...
     Script = #script { 
-        script=wf:f("Nitrogen.$sortblock('~s', { handle: ~s, connectWith: [~s] }, '~s');", [Anchor, Handle, ConnectWithGroups, PostbackInfo])
+        script=wf:f("Nitrogen.$sortblock('~s', {handle: ~s, connectWith: [~s], placeholder: '~s', forcePlaceholderSize: ~s}, '~s');", [Anchor, Handle, ConnectWithGroups, Placeholder, ForcePlaceholderSize, PostbackInfo])
     },
     wf:wire(Script),
 
     element_panel:render_element(#panel {
+        html_id=Record#sortblock.html_id,
         id=Record#sortblock.id,
         anchor=Record#sortblock.anchor,
         class=[sortblock, GroupClasses|Record#sortblock.class],
