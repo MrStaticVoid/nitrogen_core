@@ -20,5 +20,6 @@ render_element(R = #fieldset{}) ->
 
 	wf_tags:emit_tag('fieldset',Body, [
 		{class, ["fieldset", R#fieldset.class]},
-		{style, R#fieldset.style}
+		{style, R#fieldset.style},
+		{data_fields, R#fieldset.data_fields}
 	]).
