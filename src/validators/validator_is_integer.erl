@@ -12,7 +12,7 @@ render_action(Record) ->
     TargetPath = Record#is_integer.target,
     Text = wf:js_escape(Record#is_integer.text),
     CustomValidatorAction =  #custom { trigger=TriggerPath, target=TargetPath, function=fun validate/2, text = Text, tag=Record, attach_to=Record#is_integer.attach_to },
-    Script = wf:f("v.add(Validate.Numericality, { notAnIntegerMessage: \"~s\", onlyInteger: true });", [Text]),
+    Script = wf:f("v.add(Validate.Numericality, { notANumberMessage: \"~s\", notAnIntegerMessage: \"~s\", onlyInteger: true });", [Text, Text]),
     [CustomValidatorAction, Script].
     
 
