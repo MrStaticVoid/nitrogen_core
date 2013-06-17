@@ -13,6 +13,7 @@ documentation I want to see added, in no particular order.
 * Building a simple HTTP API in Nitrogen
 * Using the RESTful elements
 * Set up links from Elements and Actions to related Demos and back
+* Add wf:peer_ip docs to api.org
 
 ## Desired Guides
 
@@ -29,7 +30,9 @@ commonly presented on Stackoverflow or the mailing lists.
 * Email integration
 * Reverse Proxy configuration
 * Working with HTML5 Canvas
-* Builing a sample app that does something from the ground up
+* Building a sample app that does something from the ground up
+* Building a template/social router module (for loading templates or functions
+  based on target module exported functions)
 
 ## Other things that are worth doing with documentation
 

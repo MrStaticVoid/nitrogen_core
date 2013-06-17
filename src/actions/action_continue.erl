@@ -15,7 +15,6 @@ continue(Tag, Fun, TimeoutMS) ->
 %%% - ACTIONS - %%%
 
 render_action(Record) -> 
-    ?PRINT(render_action),
     % Spawn a wrapped comet function.
     #comet {
         function=fun() -> continue_wrapper(Record) end
@@ -24,10 +23,7 @@ render_action(Record) ->
 continue_wrapper(Record) ->
     % Run the user's function. The results will either
     % be the actual result of the function, 'timeout', or 'error'
-    ?PRINT(running_function),
     Result = run_continue_function(Record),
-    ?PRINT({result, Result}),
-    
 
     % Initiate a postback on the page to gather the requests...
     Ref = make_ref(),
@@ -35,10 +31,8 @@ continue_wrapper(Record) ->
     wf:flush(),
 
     % Wait for the event/1 function below to request the results...
-    ?PRINT(waiting_for_request),
     receive 
         {get_results, Pid, Ref} -> 
-            ?PRINT(requested),
             Pid ! {get_results_response, Record, Result, Ref}
     end.
 
@@ -50,18 +44,18 @@ run_continue_function(Record) ->
     Ref = make_ref(),
     Self = self(),
 
-	Context = wf_context:context(),			
+    Context = wf_context:context(),			
     % Spawn the user's function...
     Pid = spawn(fun() -> 
-		wf_context:context(Context),
-		wf_context:clear_actions(),
+        wf_context:context(Context),
+        wf_context:clear_actions(),
         try 
             Self ! {result, Fun(), Ref}
         catch 
             _Type : timeout ->
                 timeout;
             Type : Error ->
-                error_handler:error_msg("Error in continuation function ~p (~p) - ~p : ~p~n", [Fun, Tag, Type, Error]),
+                error_logger:error_msg("Error in continuation function ~p (~p) - ~p : ~p~nStack Trace: ~p", [Fun, Tag, Type, Error, erlang:get_stacktrace()]),
                 Self ! {result, error, Ref}
         end
 

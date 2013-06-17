@@ -63,10 +63,12 @@
 
 %%% TERNARY IF AND VARIATIONS %%%
 -define(WF_IF(Term,IfTrue,IfFalse),
-    case (Term) of
-        F when F==false;F==undefined;F==[] -> IfFalse;
-        _ -> IfTrue
-    end).
+    fun() ->
+        case (Term) of
+            F when F==false;F==undefined;F==[] -> IfFalse;
+            _ -> IfTrue
+        end
+    end()).
 
 -define(WF_IF(Term,IfTrue), ?WF_IF(Term,IfTrue,"")).
 
@@ -99,7 +101,7 @@
 -record(email_link, {?ELEMENT_BASE(element_email_link), title="",text="",body="",html_encode=true,email=""}).
 -record(error, {?ELEMENT_BASE(element_error), text="", html_encode=true}).
 -record(span, {?ELEMENT_BASE(element_span), body="", text="", html_encode=true, data_fields=[]}).
--record(button, {?ELEMENT_BASE(element_button), text="Button", html_encode=true, click, postback, delegate, data_fields=[]}).
+-record(button, {?ELEMENT_BASE(element_button), text="", body="", image, html_encode=true, click, postback, delegate, data_fields=[]}).
 -record(literal, {?ELEMENT_BASE(element_literal), text="", html_encode=true}).
 -record(textbox, {?ELEMENT_BASE(element_textbox), text="", maxlength="", placeholder="", html_encode=true, next, postback, delegate, html_name}).
 -record(hidden, {?ELEMENT_BASE(element_hidden), text="", html_encode=true, html_name, disabled=false}).
@@ -107,7 +109,8 @@
 -record(range, {?ELEMENT_BASE(element_range), data_fields=[], min=0, max=100, step=1, value=0, next, postback, delegate}).
 -record(datepicker_textbox, {?ELEMENT_BASE(element_datepicker_textbox), text="", next, html_encode=true, validators=[], options = [{dateFormat, "yy-mm-dd"}] }).
 -record(dropdown, {?ELEMENT_BASE(element_dropdown), options=[], html_encode=true, postback, delegate, value, multiple=false, disabled=false, data_fields=[], html_name}).
--record(option, { text="", value=undefined, selected=false, show_if=true }).
+-record(option, { text="", value=undefined, selected=false, show_if=true, disabled=false }).
+-record(option_group, {text="", options=[], show_if=true, disabled=false }).
 -record(checkbox, {?ELEMENT_BASE(element_checkbox), text="", html_encode=true, checked=false, value="on", postback, delegate, html_name}).
 -record(radiogroup, {?ELEMENT_BASE(element_radiogroup), body=[]}).
 -record(radio, {?ELEMENT_BASE(element_radio), text="", html_encode=true, value, name, checked=false, postback, delegate, html_name}).
@@ -119,7 +122,7 @@
 -record(panel, {?ELEMENT_BASE(element_panel), body="", text="", html_encode=true, data_fields=[]}).
 -record(fieldset, {?ELEMENT_BASE(element_fieldset), body="", text="", html_encode=true, legend_body="", legend_text="", legend_html_encode=true, data_fields=[]}).
 -record(spinner, {?ELEMENT_BASE(element_spinner), image="/nitrogen/spinner.gif"}).
--record(image, {?ELEMENT_BASE(element_image), image="", alt}).
+-record(image, {?ELEMENT_BASE(element_image), image="", alt, width, height}).
 -record(lightbox, {?ELEMENT_BASE(element_lightbox), body="" }).
 -record(table, {?ELEMENT_BASE(element_table), rows, header=[], footer=[]}).
 -record(tablerow, {?ELEMENT_BASE(element_tablerow), cells}).

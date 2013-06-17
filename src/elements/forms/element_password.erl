@@ -29,6 +29,6 @@ render_element(Record) ->
         {class, [password, Record#password.class]},
         {style, Record#password.style},
         {name, Record#password.html_name},
-        {value, Value},
-        {placeholder, Placeholder}
+        {placeholder, Placeholder},
+        {value, Value}
     ]).

@@ -73,11 +73,6 @@ render_element(Record) ->
 
     wf:wire(UploadJS),
 
-    % Set the dimensions of the file input element the same as
-    % faked file input button has.
-    wf:wire(wf:f("jQuery('#~s').width(jQuery('#~s').width()); jQuery('#~s').height(jQuery('#~s').height());",
-        [FileInputID, FakeFileInputID, FileInputID, FakeFileInputID])),
-
     % Render the controls and hidden iframe...
     FormContent = [
         %% IE9 does not support the droppable option, so let's just hide the drop field
@@ -188,7 +183,9 @@ event({upload_finished, Record}) ->
     {Filename,NewTag} = case Req:post_files() of
         [] -> 
             {undefined,{upload_event, Record, undefined, undefined, undefined}};
-        [#uploaded_file { original_name=OriginalName, temp_file=TempFile }|_] ->
+        [UploadedFile | _] ->
+            OriginalName = uploaded_file:original_name(UploadedFile),
+            TempFile = uploaded_file:temp_file(UploadedFile),
             {OriginalName,{upload_event, Record, OriginalName, TempFile, node()}}
     end,
 
